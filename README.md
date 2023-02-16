@@ -1,8 +1,9 @@
 # codespaces-blank
-//Takes a post and then takes a sentence from the post before turning it into a tweet with out the need of an API
 
-// Not working currently.
-//This is a WordPress plugin that generates a random sentence from a website's content and displays it in a dashboard widget. It also provides a "send to Twitter" button that constructs a tweet from the sentence and sends it to Twitter.
+Takes a post and then takes a sentence from the post before turning it into a tweet with out the need of an API
+
+ Not working currently.
+ This is a WordPress plugin that generates a random sentence from a website's content and displays it in a dashboard widget. It also provides a "send to Twitter" button that constructs a tweet from the sentence and sends it to Twitter.
 
 The plugin has several functions:
 
