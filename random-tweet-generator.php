@@ -14,7 +14,7 @@ function enqueue_random_sentence_generator_scripts() {
         'ajax_url' => admin_url( 'admin-ajax.php' ),
         'nonce' => wp_create_nonce( 'random-sentence-generator-nonce' )
     );
-    wp_enqueue_script( 'random-sentence-generator.js', plugin_dir_url( __FILE__ ) . 'random-sentence-generator.js', array(), '1.0', true );
+    wp_enqueue_script( 'random-sentence-generator.js', plugin_dir_url( __FILE__ ) . 'random-sentence-generator.js', array(), '1.1', true );
     wp_localize_script( 'random-sentence-generator.js', 'random_sentence_generator_data', $data );
 }
 add_action( 'wp_enqueue_scripts', 'enqueue_random_sentence_generator_scripts' );
@@ -79,6 +79,30 @@ function construct_tweet($sentence, $tags) {
 
     return $sentence;
 }
+function get_random_sentence_from_website() {
+    $args = array(
+        'post_type' => 'post',
+        'orderby' => 'rand',
+        'posts_per_page' => 1
+    );
+
+    $query = new WP_Query( $args );
+
+    if ( $query->have_posts() ) {
+        while ( $query->have_posts() ) {
+            $query->the_post();
+            $content = get_the_content();
+            $sentences = preg_split( '/(\.|!|\?)\s+/', $content, -1, PREG_SPLIT_DELIM_CAPTURE );
+            $random_sentence = $sentences[array_rand($sentences)];
+        }
+    } else {
+        $random_sentence = 'No sentences found.';
+    }
+
+    wp_reset_postdata();
+
+    return $random_sentence;
+}
 
 // Add an AJAX action for getting a random sentence
 add_action('wp_ajax_generate_random_sentence', 'generate_random_sentence');
@@ -95,7 +119,7 @@ wp_die();
 // Function to extract relevant tags from a sentence
 function extract_tags_from_sentence($sentence) {
 // Extract all words that start with a hash (#)
-preg_match_all('/#(\w+)/', $sentence, $matches);
+preg_replace_callback('/#(\w+)/', $sentence, $matches);
 $tags = $matches[1];
 return $tags;
 }
@@ -138,7 +162,6 @@ return $tweet;
 $sentence = tweet_random_sentence();
 $nonce = wp_create_nonce('random-sentence-nonce');
     // Display the sentence in a text area
-echo '<p class=\'random-sentence-display\'>' . $sentence . '</p>';
 echo '<textarea id=\'random_sentence\' readonly>' . $sentence . '</textarea><input type=\'hidden\' id=\'random_sentence_security\' value=\'' . $nonce . '\'>';
 
 // Add a refresh button
@@ -160,7 +183,7 @@ wp_localize_script('random-sentence-generator.js', 'random_sentence_generator_da
 
 
 // Add hooks for enqueueing scripts and adding dashboard widgets
-add_action('wp_enqueue_scripts', 'enqueue_random_sentence_generator_scripts');
+add_action('wp_enqueue_scripts', 'wp_footer');
 add_action('admin_enqueue_scripts', 'enqueue_random_sentence_generator_scripts');
 add_action('wp_dashboard_setup', 'add_random_sentence_dashboard_widget');
 
